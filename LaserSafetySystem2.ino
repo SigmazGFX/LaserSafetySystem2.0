@@ -1,11 +1,9 @@
 #include <Wire.h>
-
 //I2C LCD OPTION
 #include <LiquidCrystal_I2C.h>
 #define I2C_ADDR 0x27 // Define I2C Address for LCD backpack (Connect SDA and SCL to D4/D5)
 LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //--
-
 //  4-BIT WIRED LCD OPTION --
 // * LCD RS pin to digital pin 12
 // * LCD Enable pin to digital pin 11
@@ -29,9 +27,7 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //---
 
 //-=-=-=-=-=-=-=-=-= PIN DEFINES -=--=-=-=-=-=-=
-
 // -------------> PINS MUST BE SELECTED TO COMPLIMENT THE LCD CONNECT TYPE CHOSEN <---------------------
-
 // -----> I2C Compatible Pinouts <-------
 #define WORKLID 6 //Work area door switch. (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 #define ELECLID 3 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
@@ -48,38 +44,30 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin (NOTE: this pin will need to be switched to 2 if you wish to use inturrupts for flow calcs)
 //#define ALARMPIN 13 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
 
-//=-=-=-=-=-=-=--=-=-=-=--=-=--=-=-=-=-=-=-=-=-=
-
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 int TempSensorPin = A0;
 //the analog pin the TMP36's Vout (sense) pin is connected to
 //the resolution is 10 mV / degree centigrade with a
 //500 mV offset to allow for negative temperatures
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
-
-long previousMillis = 0;
-long interval = 1000; //defined millis interval (1 sec)
-
+long previousMillis = 0; // Just a standard Millis clock for comparing against
+long interval = 1000; //defined millis interval (1 sec) generic millis unit for comparison
 //=-=-=-=- Setup alarm flags -=-=-=-=-=-=
-//=-=-=-=- V2.0 flags =-=-=-
 int workLidState = 0; //Work area door 0 = closed, 1 = open
 int elecLidState = 0; //LPSU area door 0 = closed, 1 = open
 int tubeLidState = 0; //Laser tube area door 0 = closed, 1 = open
 int minFlow = 0; //Water flow under minimum threshold 0 = within threshold, 1 = alarm!
 int maxTemp = 0; //Coolant temp exceeds max threshold 0 = within threshold, 1 = alarm!
 int maxTempVal = 70; //Maximum temperature in degrees F allowable.
-
 //-=-=-=-=-=-=-=-=-=-= Flow sensor setup -=-=-=-=-=-=-
 volatile int FlowPulseDet; //measuring the rising edges of the signal from the flow meter
 int CalcFlow;
-
 //-=-=-=-=-=-=-=-=- SETUP =-=-=-=-==-=--=-=-=-=-
 void setup()
 {
-
   attachInterrupt(0, rpm, RISING); //each time the flowmeter pulses D2 (INT0) rpm() will be called
   lcd.begin (20, 4);
-  // Setup the pins
+
   pinMode(INTERLOCK, OUTPUT);
   digitalWrite(INTERLOCK, LOW);
   pinMode(FLOWSENSORPIN, INPUT);
@@ -100,14 +88,12 @@ void loop() {
   doorUpdate();
   handleCheckInterlocks();
 }
-
 void handleCheckInterlocks() //Run through the interlock flags and check for alarms
 {
   if (workLidState == 1)
   {
     digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
     //Display shows work area door open error
-
   }
   if (elecLidState == 1)
   {
@@ -128,8 +114,6 @@ void handleCheckInterlocks() //Run through the interlock flags and check for ala
   {
     digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
     //Display shows excessive coolant temperature
-
-    //display over temp warning on LCD.
     lcd.setCursor(0, 0);
     lcd.print(" TEMP WARNING!!!!");
     lcd.setCursor(2, 1);
@@ -139,21 +123,11 @@ void handleCheckInterlocks() //Run through the interlock flags and check for ala
     lcd.print("IMMEDIATE ACTION");
     lcd.setCursor(6, 3);
     lcd.print("REQUIRED");
-
-
-
-  }
-  else
-  {
+  }  else  {
     digitalWrite(INTERLOCK, HIGH);//No alarms, Laser enabled (note pin state based on application)
     //include active functions below to
-
   }
 }
-
-
-
-
 void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 to either D2 or D3 to beable to use inturrupts pending display reconfig.
 {
   FlowPulseDet = 0;      //Set FlowPulseDet to 0 ready for calculations
@@ -162,16 +136,10 @@ void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 
   cli();            //Disable interrupts
   CalcFlow = (FlowPulseDet * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
 }
-
 void rpm ()     //This is the function that the interupt calls
 {
   FlowPulseDet++;  //This function measures the rising and falling edge of the hall effect sensors signal
 }
-
-
-//-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
-
-
 //-=-=-=-=-=-=- TEMP SENSOR -=-=-=-=-=
 void TempSensor()  // Temp sensor loop
 {
@@ -186,10 +154,7 @@ void TempSensor()  // Temp sensor loop
   if (temperatureF > maxTempVal) //Set this to the upper temperature limit . for the K40 it's been suggested to never exceed 70F or 21C
   {
     maxTemp = 1; //set maxTemp alarm flag
-
-  }
-  else
-  {
+  }  else  {
     maxTemp = 0 ; //if under maxTempVal keep the alarm flag off.
     {
       lcd.setCursor(2, 3);
@@ -198,11 +163,9 @@ void TempSensor()  // Temp sensor loop
       digitalWrite(ALARMPIN, LOW);
     }
     delay(50);
-
   }
 }
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
-
 void doorUpdate() {
 
   if (digitalRead(WORKLID) == HIGH) {
