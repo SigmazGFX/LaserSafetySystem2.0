@@ -45,7 +45,7 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //#define ELECLID 7 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 //#define TUBELID 8 //Laser bay door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 //#define INTERLOCK 9 //pin that enables or disables laser (used to make or break enable pins on LPSU job was originally done by the laser enable switch)
-//#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin (NOTE: INT0 inturrupt pin)
+//#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin (NOTE: this pin will need to be switched to 2 if you wish to use inturrupts for flow calcs)
 //#define ALARMPIN 13 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
 
 //=-=-=-=-=-=-=--=-=-=-=--=-=--=-=-=-=-=-=-=-=-=
@@ -73,15 +73,11 @@ int maxTempVal = 70; //Maximum temperature in degrees F allowable.
 volatile int FlowPulseDet; //measuring the rising edges of the signal from the flow meter
 int CalcFlow;
 
-void rpm ()     //This is the function that the interupt calls
-{
-  FlowPulseDet++;  //This function measures the rising and falling edge of the hall effect sensors signal
-}
-
-
 //-=-=-=-=-=-=-=-=- SETUP =-=-=-=-==-=--=-=-=-=-
 void setup()
 {
+
+  attachInterrupt(0, rpm, RISING); //each time the flowmeter pulses D2 (INT0) rpm() will be called
   lcd.begin (20, 4);
   // Setup the pins
   pinMode(INTERLOCK, OUTPUT);
@@ -166,6 +162,13 @@ void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 
   cli();            //Disable interrupts
   CalcFlow = (FlowPulseDet * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
 }
+
+void rpm ()     //This is the function that the interupt calls
+{
+  FlowPulseDet++;  //This function measures the rising and falling edge of the hall effect sensors signal
+}
+
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 
 
