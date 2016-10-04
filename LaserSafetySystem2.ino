@@ -22,6 +22,8 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //include <LiquidCrystal.h>
 //
 //LiquidCrystal lcd(12, 11, 5, 4, 3, 2);// initialize the library with the numbers of the interface pins
+//This can be better enhanced and reduced to 3 pins on the nano by using a 595 shift register and associated modified LCD lib 
+//See:(http://www.instructables.com/id/Hookup-a-16-pin-HD44780-LCD-to-an-Arduino-in-6-sec)
 //---
 
 //-=-=-=-=-=-=-=-=-= PIN DEFINES -=--=-=-=-=-=-=
