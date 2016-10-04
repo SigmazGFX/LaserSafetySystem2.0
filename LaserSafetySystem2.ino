@@ -10,7 +10,8 @@ enum {
   STATE_NO_COOLANT_FLOW,
   STATE_OVER_TEMP,
   STATE_CHECK_INTERLOCKS,
-  } InterlockState;
+  // STATE_BURN_BABY_BURN,
+} InterlockState;
 
 
 
@@ -63,6 +64,7 @@ void rpm ()     //This is the function that the interupt calls
 //-=-=-=-=-=-=-=-=- SETUP =-=-=-=-==-=--=-=-=-=-
 void setup()
 {
+  state = STATE_CHECK_INTERLOCKS;
   lcd.begin (20, 4);
   // Setup the pins
   pinMode(INTERLOCK, OUTPUT);
@@ -99,15 +101,15 @@ void loop() {
     case STATE_LASER_BAY_DOOR_OPEN:     state = handleLaserBayDoorOpen();      break;
     case STATE_NO_COOLANT_FLOW:         state = handleNoCoolantFlow();         break;
     case STATE_OVER_TEMP:               state = handleOverTemp();              break;
-   
+      // case STATE_BURN_BABY_BURN:          state = handleBurnBabyBurn();          break;
 
   }
 }
 
 int  handleCheckInterlocks() //Run through the interlock flags and check for alarms
 {
+  doorUpdate();
 
-   
   if (workLidState == alarm)
   {
     return STATE_WORK_AREA_DOOR_OPEN;
@@ -130,11 +132,11 @@ int  handleCheckInterlocks() //Run through the interlock flags and check for ala
   }
   else
   {
-    
-    doorUpdate()
+
     TempSensor();
     watchFlow();
- 
+    digitalWrite(INTERLOCK, HIGH);
+
     //return STATE_BURN_BABY_BURN;
   }
 }
@@ -142,21 +144,28 @@ int  handleCheckInterlocks() //Run through the interlock flags and check for ala
 int  handleWorkAreaDoorOpen()
 {
   digitalWrite(INTERLOCK, LOW);
+  doorUpdate();
+  return STATE_CHECK_INTERLOCKS;
 }
 
 int handleLPSUAreaDoorOpen()
 {
   digitalWrite(INTERLOCK, LOW);
+  doorUpdate();
+   return STATE_CHECK_INTERLOCKS;
 }
 
 int handleLaserBayDoorOpen()
 {
   digitalWrite(INTERLOCK, LOW);
+  doorUpdate();
+   return STATE_CHECK_INTERLOCKS;
 }
 
 int handleNoCoolantFlow()
 {
   digitalWrite(INTERLOCK, LOW);
+   return STATE_CHECK_INTERLOCKS;
 }
 
 int handleOverTemp()
@@ -174,8 +183,17 @@ int handleOverTemp()
   lcd.print("REQUIRED");
   delay(700);
   lcd.clear();
+   return STATE_CHECK_INTERLOCKS;
 }
 
+//int handleBurnBabyBurn()
+//{
+//
+//  doorUpdate()
+//  TempSensor();
+//  watchFlow();
+//
+//}
 
 void watchFlow()//Flow Watchdog
 {
@@ -200,6 +218,7 @@ void TempSensor()  // Temp sensor loop
   if (temperatureF > maxTempVal) //Set this to the upper temperature limit . for the K40 it's been suggested to never exceed 70F or 21C
   {
     maxTemp = 1; //set maxTemp alarm flag
+     
   }
   else
   {
@@ -211,27 +230,28 @@ void TempSensor()  // Temp sensor loop
       digitalWrite(ALARMPIN, LOW);
     }
     delay(50);
+     
   }
 }
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 
-void doorUpdate()
-{
-  If (digitalRead(WORKLID) == HIGH)
-  workLidState = 1
-} else {
-  workLidState = 0
-}
-}
-If (digitalRead(ELECLID) == HIGH)
-elecLidState = 1
-} else {
-  elecLidState = 0
-}
-If (digitalRead(TUBELID) == HIGH)
-tubeLidState = 1
-} else {
-  tubeLidState = 0
-}
+void doorUpdate() {
 
+  if (digitalRead(WORKLID) == HIGH) {
+    workLidState = 1;
+  } else {
+    workLidState = 0;
+  }
+  if (digitalRead(ELECLID) == HIGH) {
+    elecLidState = 1;
+  } else {
+    elecLidState = 0;
+  }
+  if (digitalRead(TUBELID) == HIGH) {
+    tubeLidState = 1;
+  } else {
+    tubeLidState = 0;
+  }
+
+ 
 }
