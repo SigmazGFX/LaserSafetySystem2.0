@@ -84,15 +84,15 @@ void setup()
 
 void loop() {
 
-//-=-=-=-=-= millis timer -=-=-=-=
+  //-=-=-=-=-= millis timer -=-=-=-=
   unsigned long currentMillis = millis();
-  if(currentMillis - previousMillis > interval) {
-    // save the last time we came around 
-    previousMillis = currentMillis; 
+  if (currentMillis - previousMillis > interval) {
+    // save the last time we came around
+    previousMillis = currentMillis;
   }
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-  
-  
+  //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
   switch (state) {
     case STATE_CHECK_INTERLOCKS:        state = handleCheckInterlocks();       break;
     case STATE_WORK_AREA_DOOR_OPEN:     state = handleWorkAreaDoorOpen();      break;
@@ -108,6 +108,7 @@ void loop() {
 int  handleCheckInterlocks() //Run through the interlock flags and check for alarms
 {
 
+   
   if (workLidState == alarm)
   {
     return STATE_WORK_AREA_DOOR_OPEN;
@@ -130,7 +131,12 @@ int  handleCheckInterlocks() //Run through the interlock flags and check for ala
   }
   else
   {
-    return STATE_BURN_BABY_BURN;
+    
+    doorUpdate()
+    TempSensor();
+    watchFlow();
+ 
+    //return STATE_BURN_BABY_BURN;
   }
 }
 
@@ -173,9 +179,8 @@ int handleOverTemp()
 
 int handleBurnBabyBurn()
 {
-  digitalWrite(INTERLOCK, HIGH);
-
-
+  
+  doorUpdate()
   TempSensor();
   watchFlow();
 
@@ -221,7 +226,21 @@ void TempSensor()  // Temp sensor loop
 
 void doorUpdate()
 {
-  workLidState = digitalRead(WORKLID);
-  elecLidState = digitalRead(ELECLID);
-  tubeLidState = digitalRead(TUBELID);
+  If (digitalRead(WORKLID) == HIGH)
+  workLidState = 1
+} else {
+  workLidState = 0
+}
+}
+If (digitalRead(ELECLID) == HIGH)
+elecLidState = 1
+} else {
+  elecLidState = 0
+}
+If (digitalRead(TUBELID) == HIGH)
+tubeLidState = 1
+} else {
+  tubeLidState = 0
+}
+
 }
