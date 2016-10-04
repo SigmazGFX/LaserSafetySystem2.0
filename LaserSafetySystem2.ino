@@ -3,18 +3,6 @@
 #define I2C_ADDR 0x27 // Define I2C Address for LCD backpack
 LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 
-enum {
-  STATE_WORK_AREA_DOOR_OPEN,
-  STATE_LPSU_AREA_DOOR_OPEN,
-  STATE_LASER_BAY_DOOR_OPEN,
-  STATE_NO_COOLANT_FLOW,
-  STATE_OVER_TEMP,
-  STATE_CHECK_INTERLOCKS,
-  // STATE_BURN_BABY_BURN,
-} InterlockState;
-
-
-
 //-=-=-=-=-=-=-=-=-= PIN DEFINES -=--=-=-=-=-=-=
 // =-=-=-= V2.0 pins =-=-=-=-
 #define WORKLID 3 //Work area door switch. (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
@@ -33,23 +21,17 @@ int TempSensorPin = A0;
 //500 mV offset to allow for negative temperatures
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 
-
-int state;
 long previousMillis = 0;
 long interval = 1000; //defined millis interval (1 sec)
 
 //=-=-=-=- Setup alarm flags -=-=-=-=-=-=
 //=-=-=-=- V2.0 flags =-=-=-
-int alarm = 1;
 int workLidState = 0; //Work area door 0 = closed, 1 = open
 int elecLidState = 0; //LPSU area door 0 = closed, 1 = open
 int tubeLidState = 0; //Laser tube area door 0 = closed, 1 = open
 int minFlow = 0; //Water flow under minimum threshold 0 = within threshold, 1 = alarm!
 int maxTemp = 0; //Coolant temp exceeds max threshold 0 = within threshold, 1 = alarm!
 int maxTempVal = 70; //Maximum temperature in degrees F allowable.
-
-
-
 
 //-=-=-=-=-=-=-=-=-=-= Flow sensor setup -=-=-=-=-=-=-
 volatile int FlowPulseDet; //measuring the rising edges of the signal from the flow meter
@@ -64,7 +46,6 @@ void rpm ()     //This is the function that the interupt calls
 //-=-=-=-=-=-=-=-=- SETUP =-=-=-=-==-=--=-=-=-=-
 void setup()
 {
-  state = STATE_CHECK_INTERLOCKS;
   lcd.begin (20, 4);
   // Setup the pins
   pinMode(INTERLOCK, OUTPUT);
@@ -84,116 +65,62 @@ void setup()
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 
 void loop() {
-
-  //-=-=-=-=-= millis timer -=-=-=-=
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis > interval) {
-    // save the last time we came around
-    previousMillis = currentMillis;
-  }
-  //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-
-  switch (state) {
-    case STATE_CHECK_INTERLOCKS:        state = handleCheckInterlocks();       break;
-    case STATE_WORK_AREA_DOOR_OPEN:     state = handleWorkAreaDoorOpen();      break;
-    case STATE_LPSU_AREA_DOOR_OPEN:     state = handleLPSUAreaDoorOpen();      break;
-    case STATE_LASER_BAY_DOOR_OPEN:     state = handleLaserBayDoorOpen();      break;
-    case STATE_NO_COOLANT_FLOW:         state = handleNoCoolantFlow();         break;
-    case STATE_OVER_TEMP:               state = handleOverTemp();              break;
-      // case STATE_BURN_BABY_BURN:          state = handleBurnBabyBurn();          break;
-
-  }
+  doorUpdate();
+  handleCheckInterlocks();
 }
 
-int  handleCheckInterlocks() //Run through the interlock flags and check for alarms
+void handleCheckInterlocks() //Run through the interlock flags and check for alarms
 {
-  doorUpdate();
+  if (workLidState == 1)
+  {
+    digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
+    //Display shows work area door open error
 
-  if (workLidState == alarm)
-  {
-    return STATE_WORK_AREA_DOOR_OPEN;
   }
-  if (elecLidState == alarm)
+  if (elecLidState == 1)
   {
-    return STATE_LPSU_AREA_DOOR_OPEN;
+    digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
+    //Display shows work area door open error
   }
-  if (tubeLidState == alarm)
+  if (tubeLidState == 1)
   {
-    return STATE_LASER_BAY_DOOR_OPEN;
+    digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
+    //Display shows work area door open error
   }
-  if (minFlow == alarm)
+  if (minFlow == 1)
   {
-    return STATE_NO_COOLANT_FLOW;
+    digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
+    //Display shows isufficiant coolant flow
   }
-  if (maxTemp == alarm)
+  if (maxTemp == 1)
   {
-    return STATE_OVER_TEMP;
+    digitalWrite(INTERLOCK, LOW); //System shuts laser down on alarm (note pin state based on application)
+    //Display shows excessive coolant temperature
+
+    //display over temp warning on LCD.
+    lcd.setCursor(0, 0);
+    lcd.print(" TEMP WARNING!!!!");
+    lcd.setCursor(2, 1);
+    lcd.print("Temp > 70");
+    lcd.print(" degrees F");
+    lcd.setCursor(2, 2);
+    lcd.print("IMMEDIATE ACTION");
+    lcd.setCursor(6, 3);
+    lcd.print("REQUIRED");
+
+
+
   }
   else
   {
+    digitalWrite(INTERLOCK, HIGH);//No alarms, Laser enabled (note pin state based on application)
+    //include active functions below to
 
-    TempSensor();
-    watchFlow();
-    digitalWrite(INTERLOCK, HIGH);
-
-    //return STATE_BURN_BABY_BURN;
   }
 }
 
-int  handleWorkAreaDoorOpen()
-{
-  digitalWrite(INTERLOCK, LOW);
-  doorUpdate();
-  return STATE_CHECK_INTERLOCKS;
-}
 
-int handleLPSUAreaDoorOpen()
-{
-  digitalWrite(INTERLOCK, LOW);
-  doorUpdate();
-   return STATE_CHECK_INTERLOCKS;
-}
 
-int handleLaserBayDoorOpen()
-{
-  digitalWrite(INTERLOCK, LOW);
-  doorUpdate();
-   return STATE_CHECK_INTERLOCKS;
-}
-
-int handleNoCoolantFlow()
-{
-  digitalWrite(INTERLOCK, LOW);
-   return STATE_CHECK_INTERLOCKS;
-}
-
-int handleOverTemp()
-{
-  digitalWrite(INTERLOCK, LOW);
-  //display over temp warning on LCD.
-  lcd.setCursor(0, 0);
-  lcd.print(" TEMP WARNING!!!!");
-  lcd.setCursor(2, 1);
-  lcd.print("Temp > 70");
-  lcd.print(" degrees F");
-  lcd.setCursor(2, 2);
-  lcd.print("IMMEDIATE ACTION");
-  lcd.setCursor(6, 3);
-  lcd.print("REQUIRED");
-  delay(700);
-  lcd.clear();
-   return STATE_CHECK_INTERLOCKS;
-}
-
-//int handleBurnBabyBurn()
-//{
-//
-//  doorUpdate()
-//  TempSensor();
-//  watchFlow();
-//
-//}
 
 void watchFlow()//Flow Watchdog
 {
@@ -204,6 +131,8 @@ void watchFlow()//Flow Watchdog
   CalcFlow = (FlowPulseDet * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
 }
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
+
+
 //-=-=-=-=-=-=- TEMP SENSOR -=-=-=-=-=
 void TempSensor()  // Temp sensor loop
 {
@@ -218,7 +147,7 @@ void TempSensor()  // Temp sensor loop
   if (temperatureF > maxTempVal) //Set this to the upper temperature limit . for the K40 it's been suggested to never exceed 70F or 21C
   {
     maxTemp = 1; //set maxTemp alarm flag
-     
+
   }
   else
   {
@@ -230,7 +159,7 @@ void TempSensor()  // Temp sensor loop
       digitalWrite(ALARMPIN, LOW);
     }
     delay(50);
-     
+
   }
 }
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
@@ -252,6 +181,4 @@ void doorUpdate() {
   } else {
     tubeLidState = 0;
   }
-
- 
 }
