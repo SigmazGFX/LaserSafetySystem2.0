@@ -19,10 +19,10 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 // * wiper to LCD VO pin (pin 3)
 //include <LiquidCrystal.h>
 //
-//LiquidCrystal lcd(12, 11, 6, 5, 4, 3);// initialize the library with the numbers of the interface pins 
+//LiquidCrystal lcd(12, 11, 6, 5, 4, 3);// initialize the library with the numbers of the interface pins
 //(NOTE: original pin setup was (12,11,5,4,3,2) assignments were switched to free D2 for inturrupt services to use with flow calcs)
 
-//This can be remedied and better enhanced by reducing the connections to 3 pins on the nano by using a 595 shift register and associated custom LCD library 
+//This can be remedied and better enhanced by reducing the connections to 3 pins on the nano by using a 595 shift register and associated custom LCD library
 //See:(http://www.instructables.com/id/Hookup-a-16-pin-HD44780-LCD-to-an-Arduino-in-6-sec)
 //---
 
@@ -59,6 +59,7 @@ int tubeLidState = 0; //Laser tube area door 0 = closed, 1 = open
 int minFlow = 0; //Water flow under minimum threshold 0 = within threshold, 1 = alarm!
 int maxTemp = 0; //Coolant temp exceeds max threshold 0 = within threshold, 1 = alarm!
 int maxTempVal = 70; //Maximum temperature in degrees F allowable.
+int minFlowRateL = 10; //Minimum flow rate/hr.
 //-=-=-=-=-=-=-=-=-=-= Flow sensor setup -=-=-=-=-=-=-
 volatile int FlowPulseDet; //measuring the rising edges of the signal from the flow meter
 int CalcFlow;
@@ -135,6 +136,14 @@ void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 
   delay (1000);      //Wait 1 second
   cli();            //Disable interrupts
   CalcFlow = (FlowPulseDet * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
+
+  if (CalcFlow < minFlowRateL)
+  {
+    minFlow = 1;
+  } else {
+    minFlow = 0;
+  }
+
 }
 void rpm ()     //This is the function that the interupt calls
 {
