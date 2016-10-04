@@ -52,6 +52,7 @@ int TempSensorPin = A0;
 //-=-=-=-=-=-=-=-=-=-=-=-=-==-=--=-=-=-=-
 long previousMillis = 0; // Just a standard Millis clock for comparing against
 long interval = 1000; //defined millis interval (1 sec) generic millis unit for comparison
+
 //=-=-=-=- Setup alarm flags -=-=-=-=-=-=
 int workLidState = 0; //Work area door 0 = closed, 1 = open
 int elecLidState = 0; //LPSU area door 0 = closed, 1 = open
@@ -131,20 +132,23 @@ void handleCheckInterlocks() //Run through the interlock flags and check for ala
 }
 void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 to either D2 or D3 to beable to use inturrupts pending display reconfig.
 {
+  unsigned long currentMillis = millis();
   FlowPulseDet = 0;      //Set FlowPulseDet to 0 ready for calculations
-  sei();            //Enables interrupts
-  delay (1000);      //Wait 1 second
-  cli();            //Disable interrupts
+  if (currentMillis - previousMillis > interval) {
+    previousMillis = currentMillis;// save the last time we collected counts
+    sei();            //Enables interrupts and begins collecting pulses
+  } else {
+    cli();            //Disable interrupts shuts down interrupt disabling pulse collection
+  }
   CalcFlow = (FlowPulseDet * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate in L/hour
-
   if (CalcFlow < minFlowRateL)
   {
     minFlow = 1;
   } else {
     minFlow = 0;
   }
-
 }
+
 void rpm ()     //This is the function that the interupt calls
 {
   FlowPulseDet++;  //This function measures the rising and falling edge of the hall effect sensors signal
