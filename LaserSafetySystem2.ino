@@ -2,7 +2,7 @@
 
 //I2C LCD OPTION
 #include <LiquidCrystal_I2C.h>
-#define I2C_ADDR 0x27 // Define I2C Address for LCD backpack
+#define I2C_ADDR 0x27 // Define I2C Address for LCD backpack (Connect SDA and SCL to D4/D5)
 LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //--
 
@@ -27,13 +27,24 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //---
 
 //-=-=-=-=-=-=-=-=-= PIN DEFINES -=--=-=-=-=-=-=
-// =-=-=-= V2.0 pins =-=-=-=-
-#define WORKLID 3 //Work area door switch. (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
-#define ELECLID 1 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
-#define TUBELID 1 //Laser bay door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+
+// -------------> PINS MUST BE SELECTED TO COMPLIMENT THE LCD CONNECT TYPE CHOSEN <---------------------
+
+// -----> I2C Compatible Pinouts <-------
+#define WORKLID 2 //Work area door switch. (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+#define ELECLID 3 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+#define TUBELID 4 //Laser bay door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 #define INTERLOCK 5 //pin that enables or disables laser (used to make or break enable pins on LPSU job was originally done by the laser enable switch)
-#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin
-#define ALARMPIN 4 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
+#define FLOWSENSORPIN 6 //Connect flow sensor signal output to this digital Pin
+#define ALARMPIN 9 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
+//
+// ----------> 4 bit LCD Compatible Pinouts <-----------------
+//#define WORKLID 10 //Work area door switch. (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+//#define ELECLID 7 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+//#define TUBELID 8 //Laser bay door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
+//#define INTERLOCK 9 //pin that enables or disables laser (used to make or break enable pins on LPSU job was originally done by the laser enable switch)
+//#define FLOWSENSORPIN 6 //Connect flow sensor signal output to this digital Pin
+//#define ALARMPIN 13 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
 
 //=-=-=-=-=-=-=--=-=-=-=--=-=--=-=-=-=-=-=-=-=-=
 
@@ -145,7 +156,7 @@ void handleCheckInterlocks() //Run through the interlock flags and check for ala
 
 
 
-void watchFlow()//Flow Watchdog
+void watchFlow()//Flow Watchdog we will have to move the flow sensor pin from 6 to either D2 or D3 to beable to use inturrupts pending display reconfig.
 {
   FlowPulseDet = 0;      //Set FlowPulseDet to 0 ready for calculations
   sei();            //Enables interrupts
