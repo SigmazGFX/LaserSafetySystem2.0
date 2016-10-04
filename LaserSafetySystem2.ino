@@ -1,7 +1,28 @@
 #include <Wire.h>
+
+//I2C LCD OPTION
 #include <LiquidCrystal_I2C.h>
 #define I2C_ADDR 0x27 // Define I2C Address for LCD backpack
 LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
+//--
+
+//  4-BIT WIRED LCD OPTION --
+// * LCD RS pin to digital pin 12
+// * LCD Enable pin to digital pin 11
+// * LCD D4 pin to digital pin 5
+// * LCD D5 pin to digital pin 4
+// * LCD D6 pin to digital pin 3
+// * LCD D7 pin to digital pin 2
+// * LCD R/W pin to ground
+// * LCD VSS pin to ground
+// * LCD VCC pin to 5V
+// * 10K resistor:
+// * ends to +5V and ground
+// * wiper to LCD VO pin (pin 3)
+//include <LiquidCrystal.h>
+//
+//LiquidCrystal lcd(12, 11, 5, 4, 3, 2);// initialize the library with the numbers of the interface pins
+//---
 
 //-=-=-=-=-=-=-=-=-= PIN DEFINES -=--=-=-=-=-=-=
 // =-=-=-= V2.0 pins =-=-=-=-
