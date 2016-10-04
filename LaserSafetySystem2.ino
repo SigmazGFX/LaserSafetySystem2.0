@@ -10,8 +10,7 @@ enum {
   STATE_NO_COOLANT_FLOW,
   STATE_OVER_TEMP,
   STATE_CHECK_INTERLOCKS,
-  STATE_BURN_BABY_BURN,
-} InterlockState;
+  } InterlockState;
 
 
 
@@ -100,7 +99,7 @@ void loop() {
     case STATE_LASER_BAY_DOOR_OPEN:     state = handleLaserBayDoorOpen();      break;
     case STATE_NO_COOLANT_FLOW:         state = handleNoCoolantFlow();         break;
     case STATE_OVER_TEMP:               state = handleOverTemp();              break;
-    case STATE_BURN_BABY_BURN:          state = handleBurnBabyBurn();          break;
+   
 
   }
 }
@@ -177,14 +176,6 @@ int handleOverTemp()
   lcd.clear();
 }
 
-int handleBurnBabyBurn()
-{
-  
-  doorUpdate()
-  TempSensor();
-  watchFlow();
-
-}
 
 void watchFlow()//Flow Watchdog
 {
