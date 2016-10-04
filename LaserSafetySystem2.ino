@@ -45,7 +45,7 @@ LiquidCrystal_I2C lcd(I2C_ADDR, 20, 4); //(I2C address, Columns, Rows)
 //#define ELECLID 7 //Electronics area door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 //#define TUBELID 8 //Laser bay door switch (Connect one side of switch to this digital pin and the other side to gnd (high = door open - low = door closed))
 //#define INTERLOCK 9 //pin that enables or disables laser (used to make or break enable pins on LPSU job was originally done by the laser enable switch)
-//#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin (NOTE: this pin will need to be switched to 2 if you wish to use inturrupts for flow calcs)
+//#define FLOWSENSORPIN 2 //Connect flow sensor signal output to this digital Pin (NOTE: INT0 inturrupt pin)
 //#define ALARMPIN 13 //Connect + side of Alarm buzzer to this Digital pin ( - side to gnd )
 
 //=-=-=-=-=-=-=--=-=-=-=--=-=--=-=-=-=-=-=-=-=-=
